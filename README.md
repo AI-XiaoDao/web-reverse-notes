@@ -12,11 +12,20 @@
 
 ## 使用
 
-把 `SKILL.md` 放到 Codex skills 目录：
+### 方式一：克隆后安装
 
 ```bash
+git clone https://github.com/AI-XiaoDao/web-reverse-notes.git
 mkdir -p ~/.codex/skills/web-reverse-notes
-cp SKILL.md ~/.codex/skills/web-reverse-notes/
+cp web-reverse-notes/SKILL.md ~/.codex/skills/web-reverse-notes/
+```
+
+### 方式二：手动复制
+
+打开仓库页面，复制 `SKILL.md` 内容，保存到：
+
+```text
+~/.codex/skills/web-reverse-notes/SKILL.md
 ```
 
 之后在相关任务（前端签名、加密参数、滑块、设备指纹、短信登录）中会自动匹配。
