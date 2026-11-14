@@ -56,11 +56,29 @@ description: 网站协议逆向与纯算复现的实战笔记。用于前端签�
 3. 是否参与签名/加密：在 `encrypt`、`sign`、`JSON.stringify` 前后观察。
 4. 改掉会怎样：做一次对照实验，确认服务端是否校验。
 
-### 5. 定位 JS
+### 5. 动态 Hook + 静态分析
 
-- 在 XHR/fetch 发送处下断点，或搜索 `debugger`。
-- 从调用栈向上找：加密函数 → 签名函数 → 参数组装函数。
-- 记录脚本 URL、行号、函数名、入参、返回值、闭包变量。
+**动态 Hook（运行时观察）**
+
+- 常用 hook 点：`XMLHttpRequest.open/send`、`window.fetch`、`WebSocket`
+  构造与 `send`、`JSON.stringify/parse`、`CryptoJS.*`、`crypto.subtle.*`、
+  `btoa/atob`、`encodeURIComponent`。
+- 记录调用栈、入参、返回值、耗时；hook 后保持 `fn.toString()` 原样，避免被检测。
+- 用 CDP `Debugger.setBreakpointOnFunctionCall` 或 JS 包装实现，二者可交叉验证。
+- 断点命中时读取作用域变量，确认参数在调用链中的真实值。
+
+**静态分析（代码层）**
+
+- 反混淆：字符串表还原、控制流平坦化、JSVMP、常量折叠、死代码。
+- 工具：Babel/acorn 做 AST 分析，格式化 + 去注释，字符串解密。
+- 搜索关键 API、常量、错误文案，与动态调用栈交叉定位。
+
+**两者结合**
+
+- Hook 提供“运行时真实值”，静态分析提供“逻辑结构”，互相印证。
+- 对 JSVMP：先 hook 解释器入口 dump 字节码流，再静态还原 opcode 表与分发表。
+- 对反调试：先用静态分析找出 `debugger`/`Function.toString` 检测点，再用
+  hook 绕过并验证。
 
 ### 6. 算法还原
 
@@ -128,6 +146,8 @@ description: 网站协议逆向与纯算复现的实战笔记。用于前端签�
 ## 工具
 
 - **AI 浏览器 MCP**：CDP hook、断点、网络抓包、页面交互
+- **CDP Debugger**：函数调用断点、作用域变量、异步调用栈
+- **Babel / acorn**：AST 反混淆、字符串表还原、控制流分析
 - **curl_cffi**：TLS/HTTP2 指纹，`impersonate` 与 UA 必须自洽
 - **pycryptodome**：AES / RSA
 - **OpenCV**：缺口模板匹配
